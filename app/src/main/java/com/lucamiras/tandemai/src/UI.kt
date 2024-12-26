@@ -1,5 +1,6 @@
 package com.lucamiras.tandemai.src
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -73,23 +75,8 @@ fun ChatBubble(chatMessage: Content) {
 }
 
 @Composable
-fun MistakesBubble(mistakeText: String) {
-    Card (
-        modifier = Modifier
-            .padding(12.dp)
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp, 20.dp, 20.dp, 20.dp)
-    ) {
-        Text (
-            text = mistakeText,
-            modifier = Modifier
-                .padding(12.dp))
-    }
-}
-
-@Composable
-fun MistakesContent(mistakesList:List<String>?) {
-    if (!mistakesList.isNullOrEmpty()) {
+fun MistakesContent(mistakesList:List<Mistake>?) {
+    if (mistakesList!!.isNotEmpty()) {
         LazyColumn (
             modifier = Modifier
                 .fillMaxSize()
@@ -104,6 +91,35 @@ fun MistakesContent(mistakesList:List<String>?) {
                 .fillMaxSize()
         ) {
             Text ( "You have not made any mistakes yet! Good job!" )
+        }
+    }
+}
+
+@Composable
+fun MistakesBubble(mistake: Mistake) {
+    Card (
+        modifier = Modifier
+            .padding(12.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp, 20.dp, 20.dp, 20.dp)
+    ) {
+        Row (
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text (
+                text = mistake.id.toString(),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .wrapContentWidth()
+            )
+            Text (
+                text = mistake.description,
+                modifier = Modifier
+                    .padding(12.dp)
+                    .wrapContentWidth()
+            )
         }
     }
 }

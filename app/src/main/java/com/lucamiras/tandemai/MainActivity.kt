@@ -48,12 +48,31 @@ import kotlinx.coroutines.launch
 import com.lucamiras.tandemai.src.LLMClient
 import com.lucamiras.tandemai.src.ChatBubble
 import com.lucamiras.tandemai.StartScreen
+import android.util.Log
+import android.view.View
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lucamiras.tandemai.src.Mistake
+import com.lucamiras.tandemai.src.MistakesContent
 
+
+class SharedViewModelFactory : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T{
+        if (modelClass.isAssignableFrom(SharedViewModel::class.java)) {
+            return SharedViewModel() as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val llmClient = LLMClient()
+        Log.w("MYTAG", "Initialized LLM")
+        val sharedViewModel = ViewModelProvider(
+            this, SharedViewModelFactory())[SharedViewModel::class.java]
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
@@ -68,22 +87,26 @@ class MainActivity : ComponentActivity() {
                 ){
                     val language = navController.currentBackStackEntry?.arguments?.getString("chosenLanguage")
                     val level = navController.currentBackStackEntry?.arguments?.getString("chosenLevel")
-                    val llmClient = LLMClient(language, level)
-                    MyApp(navController, llmClient)
+
+                    MyApp(navController, llmClient, language, level)
                 }
-                composable("MyMistakes/{mistakesList}",
-                    arguments = listOf(
-                        navArgument("mistakesList") { type = NavType.StringListType }
-                    ) ) {
+                composable("MyMistakes") {
                     MyMistakes(navController)
                 }
+
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyApp(navController: NavController, llmClient: LLMClient) {
+fun MyApp(navController: NavController,
+          llmClient: LLMClient,
+          language: String?,
+          level: String?) {
+    llmClient.initializePartner(language, level)
+    val sharedViewModel: SharedViewModel = viewModel(factory = SharedViewModelFactory())
     val userName: String = "user"
     val assistantName: String = "model"
     val appName: String = "Tandem AI"
@@ -106,9 +129,10 @@ fun MyApp(navController: NavController, llmClient: LLMClient) {
             FloatingActionButton(
                 containerColor = mistakesColor.value,
                 onClick = {
-                    if (mistakesNum.value != 0) {
-                        navController.navigate("MyMistakes/$mistakesList")
+                    for (m in mistakesList) {
+                        sharedViewModel.addToMistakes(m)
                     }
+                    navController.navigate("MyMistakes")
                 }
             ) {
                 Text(mistakesNum.value.toString())
@@ -161,6 +185,38 @@ fun MyApp(navController: NavController, llmClient: LLMClient) {
                     ChatBubble(msg)
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MyMistakes(navController: NavController) {
+    val sharedViewModel: SharedViewModel = viewModel(factory = SharedViewModelFactory())
+    Log.w("MYTAG", sharedViewModel.mistakes.toString())
+    val mistakesListTest = listOf(
+        Mistake(id=0, description = "Hello"),
+        Mistake(id=1, description = "My name is"),
+        Mistake(id=2, description = "Doge"),
+        Mistake(id=3, description = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.")
+    )
+    val mistakesList = sharedViewModel.mistakes.value
+    val mistakesNum = 3
+    val topAppBarTitle = if (mistakesNum == 0) { "Mistakes" } else { "Mistakes ($mistakesNum)" }
+
+    Scaffold (
+        topBar = {
+            TopAppBar (
+                title = { Text(topAppBarTitle) }
+            )
+        }
+    ) { innerPadding ->
+        Box (
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            MistakesContent(mistakesList = mistakesList)
         }
     }
 }
