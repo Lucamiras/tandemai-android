@@ -6,26 +6,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -43,7 +36,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavType
@@ -55,6 +47,7 @@ import com.google.ai.client.generativeai.type.content
 import kotlinx.coroutines.launch
 import com.lucamiras.tandemai.src.LLMClient
 import com.lucamiras.tandemai.src.ChatBubble
+import com.lucamiras.tandemai.StartScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -78,6 +71,12 @@ class MainActivity : ComponentActivity() {
                     val llmClient = LLMClient(language, level)
                     MyApp(navController, llmClient)
                 }
+                composable("MyMistakes/{mistakesList}",
+                    arguments = listOf(
+                        navArgument("mistakesList") { type = NavType.StringListType }
+                    ) ) {
+                    MyMistakes(navController)
+                }
             }
         }
     }
@@ -92,7 +91,6 @@ fun MyApp(navController: NavController, llmClient: LLMClient) {
     val openingResponse: String = llmClient.callLLM(openingMessage)
     var message by remember { mutableStateOf("")}
     val history = remember { mutableStateListOf(content(role=assistantName) {text(openingResponse)})}
-    var mistakesExpanded by remember { mutableStateOf(false) }
     val mistakesNum = llmClient.mistakesCount.collectAsState()
     val mistakesColor = llmClient.mistakesColor.collectAsState()
     val mistakesList = llmClient.mistakesList
@@ -108,7 +106,9 @@ fun MyApp(navController: NavController, llmClient: LLMClient) {
             FloatingActionButton(
                 containerColor = mistakesColor.value,
                 onClick = {
-                    mistakesExpanded = !mistakesExpanded
+                    if (mistakesNum.value != 0) {
+                        navController.navigate("MyMistakes/$mistakesList")
+                    }
                 }
             ) {
                 Text(mistakesNum.value.toString())
@@ -159,31 +159,6 @@ fun MyApp(navController: NavController, llmClient: LLMClient) {
             ) {
                 items(history.asReversed()) { msg ->
                     ChatBubble(msg)
-                }
-            }
-        }
-        AnimatedVisibility (
-            visible = mistakesExpanded,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ){
-            Card(
-                colors = CardDefaults.cardColors(containerColor = Color.LightGray),
-                shape = RoundedCornerShape(20.dp, 20.dp, 20.dp, 20.dp),
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .fillMaxHeight(0.3f)
-                    .padding(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
-                LazyColumn (
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .wrapContentSize()
-                ) {
-                    items(mistakesList) { m ->
-                        Text(m, modifier = Modifier.padding(15.dp))
-                    }
                 }
             }
         }
