@@ -6,9 +6,11 @@ import com.lucamiras.tandemai.src.Mistake
 
 
 class SharedViewModel() : ViewModel() {
-    var mistakes = MutableLiveData<MutableList<Mistake>>()
+    var mistakes = MutableLiveData<MutableList<Mistake>>(mutableListOf())
 
     fun addToMistakes(mistake: Mistake) {
-        mistakes.value?.add(mistake)
+        val currentList = mistakes.value ?: mutableListOf()
+        currentList.add(mistake)
+        mistakes.postValue(currentList)
     }
 }

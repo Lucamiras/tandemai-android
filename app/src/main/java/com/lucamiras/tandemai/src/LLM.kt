@@ -40,11 +40,6 @@ class LLMClient {
     val mistakesCount: StateFlow<Int> = _mistakesCount
     val mistakesColor: StateFlow<Color> = _mistakesColor
     val mistakesList: SnapshotStateList<Mistake> = _mistakes
-    private val _nextMistakeId = if (mistakesList.isNotEmpty()) {
-        mistakesList.last().id + 1
-    } else {
-        0
-    }
 
     fun initializePartner(language: String?, level: String?) {
         try {
@@ -88,7 +83,6 @@ class LLMClient {
     }
 
     private suspend fun generateResponses(message: String): String {
-
         val chat = _model.startChat(history = _history)
         val jsonString = chat.sendMessage(message).candidates[0].content.parts[0].asTextOrNull().toString()
         val parsedJson: Response = try {
@@ -113,16 +107,24 @@ class LLMClient {
         return (response)
     }
 
+    private fun generateMistakeId(): Int {
+        val mistakeId = if (mistakesList.isNotEmpty()) {
+            mistakesList.last().id + 1
+        } else {
+            0
+        }
+        return (mistakeId)
+    }
+
     private fun addMistakesToList(mistake: List<String>) {
         for (m in mistake) {
             val mistakeObject = Mistake(
-                id = _nextMistakeId,
+                id = generateMistakeId(),
                 description = m
             )
             _mistakes.add(mistakeObject)
             _mistakesCount.value += 1
             _mistakesColor.value = Color.Red
-
         }
 
     }

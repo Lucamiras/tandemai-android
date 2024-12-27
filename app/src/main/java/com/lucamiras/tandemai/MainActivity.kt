@@ -49,7 +49,6 @@ import com.lucamiras.tandemai.src.LLMClient
 import com.lucamiras.tandemai.src.ChatBubble
 import com.lucamiras.tandemai.StartScreen
 import android.util.Log
-import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -91,7 +90,7 @@ class MainActivity : ComponentActivity() {
                     MyApp(navController, llmClient, language, level)
                 }
                 composable("MyMistakes") {
-                    MyMistakes(navController)
+                    MistakesScreen(navController)
                 }
 
             }
@@ -191,7 +190,7 @@ fun MyApp(navController: NavController,
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyMistakes(navController: NavController) {
+fun MistakesScreen(navController: NavController) {
     val sharedViewModel: SharedViewModel = viewModel(factory = SharedViewModelFactory())
     Log.w("MYTAG", sharedViewModel.mistakes.toString())
     val mistakesListTest = listOf(
@@ -200,7 +199,7 @@ fun MyMistakes(navController: NavController) {
         Mistake(id=2, description = "Doge"),
         Mistake(id=3, description = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.")
     )
-    val mistakesList = sharedViewModel.mistakes.value
+    val mistakesList = sharedViewModel.mistakes
     val mistakesNum = 3
     val topAppBarTitle = if (mistakesNum == 0) { "Mistakes" } else { "Mistakes ($mistakesNum)" }
 
@@ -216,7 +215,8 @@ fun MyMistakes(navController: NavController) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            MistakesContent(mistakesList = mistakesList)
+            // MistakesContent(mistakesList = mistakesList)
+            Text(mistakesList.toString())
         }
     }
 }
