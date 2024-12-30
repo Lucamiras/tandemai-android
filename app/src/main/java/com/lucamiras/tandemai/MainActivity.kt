@@ -49,29 +49,19 @@ import com.lucamiras.tandemai.src.LLMClient
 import com.lucamiras.tandemai.src.ChatBubble
 import com.lucamiras.tandemai.StartScreen
 import android.util.Log
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.activity.viewModels
 import com.lucamiras.tandemai.src.Mistake
 import com.lucamiras.tandemai.src.MistakesContent
 
 
-class SharedViewModelFactory : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T{
-        if (modelClass.isAssignableFrom(SharedViewModel::class.java)) {
-            return SharedViewModel() as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
-
 class MainActivity : ComponentActivity() {
+
+    private val sharedViewModel: SharedViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val llmClient = LLMClient()
         Log.w("MYTAG", "Initialized LLM")
-        val sharedViewModel = ViewModelProvider(
-            this, SharedViewModelFactory())[SharedViewModel::class.java]
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
@@ -87,10 +77,10 @@ class MainActivity : ComponentActivity() {
                     val language = navController.currentBackStackEntry?.arguments?.getString("chosenLanguage")
                     val level = navController.currentBackStackEntry?.arguments?.getString("chosenLevel")
 
-                    MyApp(navController, llmClient, language, level)
+                    MyApp(navController, llmClient, language, level, sharedViewModel)
                 }
                 composable("MyMistakes") {
-                    MistakesScreen(navController)
+                    MistakesScreen(navController, sharedViewModel)
                 }
 
             }
@@ -103,9 +93,9 @@ class MainActivity : ComponentActivity() {
 fun MyApp(navController: NavController,
           llmClient: LLMClient,
           language: String?,
-          level: String?) {
+          level: String?,
+          sharedViewModel: SharedViewModel) {
     llmClient.initializePartner(language, level)
-    val sharedViewModel: SharedViewModel = viewModel(factory = SharedViewModelFactory())
     val userName: String = "user"
     val assistantName: String = "model"
     val appName: String = "Tandem AI"
@@ -190,8 +180,8 @@ fun MyApp(navController: NavController,
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MistakesScreen(navController: NavController) {
-    val sharedViewModel: SharedViewModel = viewModel(factory = SharedViewModelFactory())
+fun MistakesScreen(navController: NavController,
+                   sharedViewModel: SharedViewModel) {
     Log.w("MYTAG", sharedViewModel.mistakes.toString())
     val mistakesListTest = listOf(
         Mistake(id=0, description = "Hello"),
@@ -199,8 +189,8 @@ fun MistakesScreen(navController: NavController) {
         Mistake(id=2, description = "Doge"),
         Mistake(id=3, description = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.")
     )
-    val mistakesList = sharedViewModel.mistakes
-    val mistakesNum = 3
+    val mistakesList = sharedViewModel.mistakes.value!!.distinct()
+    val mistakesNum = mistakesList.size
     val topAppBarTitle = if (mistakesNum == 0) { "Mistakes" } else { "Mistakes ($mistakesNum)" }
 
     Scaffold (
@@ -215,8 +205,7 @@ fun MistakesScreen(navController: NavController) {
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // MistakesContent(mistakesList = mistakesList)
-            Text(mistakesList.toString())
+            MistakesContent(mistakesList = mistakesList)
         }
     }
 }

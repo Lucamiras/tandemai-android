@@ -75,22 +75,10 @@ fun ChatBubble(chatMessage: Content) {
 }
 
 @Composable
-fun MistakesContent(mistakesList:List<Mistake>?) {
-    if (mistakesList!!.isNotEmpty()) {
-        LazyColumn (
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            items(mistakesList) { mistake ->
-                MistakesBubble(mistake)
-            }
-        }
-    } else {
-        Column (
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            Text ( "You have not made any mistakes yet! Good job!" )
+fun MistakesContent(mistakesList: List<Mistake>) {
+    LazyColumn {
+        items(mistakesList) { mistake ->
+            MistakesBubble(mistake = mistake)
         }
     }
 }

@@ -88,9 +88,10 @@ class LLMClient {
         val parsedJson: Response = try {
             parseJsonFromText(jsonString)
         } catch (e: Exception) {
+            Log.w("MODELERROR", e.message.toString())
             Response(
                 chatResponse = "ERROR",
-                mistakes = listOf("MISTAKE")
+                mistakes = listOf()
             )
         }
         val response = parsedJson.chatResponse
