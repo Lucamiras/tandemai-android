@@ -1,4 +1,4 @@
-package com.lucamiras.tandemai
+package com.lucamiras.tandemai.ui.featureSetup
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,28 +19,36 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-
+import com.lucamiras.tandemai.data.model.Language
+import com.lucamiras.tandemai.data.model.SkillLevel
+import java.util.Locale
 
 @Composable
-fun StartScreen(navController: NavController) {
+fun SetupScreen(navController: NavController, setupViewModel: SetupViewModel) {
 
-    val languages = listOf("Hungarian", "Danish", "English")
-    val levels = listOf("A1", "A2", "B1", "B2")
+    // Here we retrieve the languages and skill levels from the enums in data.model
+    val languages = remember { Language.entries.toList() }
+    val skillLevel = remember { SkillLevel.entries.toList() }
+
+    // Setup necessary variables for dropdowns and dropdown selection
     val languagesItemPosition = remember {
         mutableIntStateOf(0)
     }
-    val levelsItemPosition = remember {
+    val skillLevelsItemPosition = remember {
         mutableIntStateOf(0)
     }
     val isLanguagesDropdownExpanded = remember {
         mutableStateOf(false)
     }
-    val isLevelsDropdownExpanded = remember {
+    val isSkillLevelsDropdownExpanded = remember {
         mutableStateOf(false)
     }
 
+    // INTERFACE
     Column (
         modifier = Modifier
             .fillMaxSize(),
@@ -56,7 +64,7 @@ fun StartScreen(navController: NavController) {
                     isLanguagesDropdownExpanded.value = true
                 }) {
                 Text(
-                    text = languages[languagesItemPosition.intValue],
+                    text = languages[languagesItemPosition.intValue].name,
                     modifier = Modifier
                         .padding(12.dp)
                         .background(color= Color.LightGray)
@@ -66,7 +74,7 @@ fun StartScreen(navController: NavController) {
             DropdownMenu(expanded = isLanguagesDropdownExpanded.value, onDismissRequest = {isLanguagesDropdownExpanded.value = false}) {
                 languages.forEachIndexed { index, language ->
                     DropdownMenuItem(
-                        text = {Text(text = language)},
+                        text = {Text(text = language.name) },
                         onClick = {
                             isLanguagesDropdownExpanded.value = false
                             languagesItemPosition.intValue = index
@@ -79,33 +87,36 @@ fun StartScreen(navController: NavController) {
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable {
-                    isLevelsDropdownExpanded.value = true
+                    isSkillLevelsDropdownExpanded.value = true
                 }) {
                 Text(
-                    text = levels[levelsItemPosition.intValue],
+                    text = skillLevel[skillLevelsItemPosition.intValue].name,
                     modifier = Modifier
                         .padding(12.dp)
                         .background(color= Color.LightGray)
                         .padding(12.dp)
                 )
             }
-            DropdownMenu(expanded = isLevelsDropdownExpanded.value, onDismissRequest = {isLevelsDropdownExpanded.value = false}) {
-                levels.forEachIndexed { index, level ->
+            DropdownMenu(expanded = isSkillLevelsDropdownExpanded.value, onDismissRequest = {isSkillLevelsDropdownExpanded.value = false}) {
+                skillLevel.forEachIndexed { index, level ->
                     DropdownMenuItem(
-                        text = {Text(text = level)},
+                        text = {Text(text = level.name)},
                         onClick = {
-                            isLevelsDropdownExpanded.value = false
-                            levelsItemPosition.intValue = index
+                            isSkillLevelsDropdownExpanded.value = false
+                            skillLevelsItemPosition.intValue = index
                         })
                 }
             }
         }
 
-        Button(onClick= {
-            val chosenLanguage = languages[languagesItemPosition.intValue]
-            val chosenLevel = levels[levelsItemPosition.intValue]
-            navController.navigate("MyApp/$chosenLanguage/$chosenLevel")}) {
-            Text(text="Let's go!")
+        // BUTTON
+        Button(
+            onClick={
+                setupViewModel.setLanguage(languages[languagesItemPosition.intValue])
+                setupViewModel.setSkillLevel(skillLevel[skillLevelsItemPosition.intValue])
+                navController.navigate("MyApp")}) {
+            Text(
+                text="Let's go!")
         }
     }
 }
