@@ -21,7 +21,7 @@ fun AppNavigation(
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "SetupScreen") {
         composable("SetupScreen"){
-            SetupScreen(navController, setupViewModel)
+            SetupScreen(navController, setupViewModel, chatViewModel, mistakesViewModel)
         }
         composable("ChatScreen"){
             ChatScreen(navController, setupViewModel, chatViewModel, mistakesViewModel)

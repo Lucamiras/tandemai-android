@@ -92,4 +92,8 @@ class ChatViewModel : ViewModel() {
         val skillLevel = setupViewModel.selectedSkillLevel
         return (LLMImplementation(LLMAPIClient(language, skillLevel)))
     }
+
+    fun clearChatHistory() {
+        _chatHistory.value = emptyList()
+    }
 }

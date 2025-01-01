@@ -25,10 +25,15 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.lucamiras.tandemai.data.model.Language
 import com.lucamiras.tandemai.data.model.SkillLevel
+import com.lucamiras.tandemai.ui.featureChat.ChatViewModel
+import com.lucamiras.tandemai.ui.featureMistakes.MistakesViewModel
 import java.util.Locale
 
 @Composable
-fun SetupScreen(navController: NavController, setupViewModel: SetupViewModel) {
+fun SetupScreen(navController: NavController,
+                setupViewModel: SetupViewModel,
+                chatViewModel: ChatViewModel,
+                mistakesViewModel: MistakesViewModel) {
 
     // Here we retrieve the languages and skill levels from the enums in data.model
     val languages = remember { Language.entries.toList() }
@@ -114,6 +119,8 @@ fun SetupScreen(navController: NavController, setupViewModel: SetupViewModel) {
             onClick={
                 setupViewModel.setLanguage(languages[languagesItemPosition.intValue])
                 setupViewModel.setSkillLevel(skillLevel[skillLevelsItemPosition.intValue])
+                chatViewModel.clearChatHistory()
+                mistakesViewModel.clearMistakes()
                 navController.navigate("ChatScreen")}) {
             Text(
                 text="Let's go!")
