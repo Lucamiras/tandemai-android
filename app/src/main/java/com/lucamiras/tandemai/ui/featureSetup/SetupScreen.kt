@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -19,15 +20,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.capitalize
-import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.lucamiras.tandemai.data.model.Language
+import com.lucamiras.tandemai.data.model.Scenario
 import com.lucamiras.tandemai.data.model.SkillLevel
 import com.lucamiras.tandemai.ui.featureChat.ChatViewModel
 import com.lucamiras.tandemai.ui.featureMistakes.MistakesViewModel
-import java.util.Locale
 
 @Composable
 fun SetupScreen(navController: NavController,
@@ -38,6 +37,7 @@ fun SetupScreen(navController: NavController,
     // Here we retrieve the languages and skill levels from the enums in data.model
     val languages = remember { Language.entries.toList() }
     val skillLevel = remember { SkillLevel.entries.toList() }
+    val scenario = remember { Scenario.entries.toList() }
 
     // Setup necessary variables for dropdowns and dropdown selection
     val languagesItemPosition = remember {
@@ -46,14 +46,20 @@ fun SetupScreen(navController: NavController,
     val skillLevelsItemPosition = remember {
         mutableIntStateOf(0)
     }
+    val scenarioItemPosition = remember {
+        mutableIntStateOf(0)
+    }
     val isLanguagesDropdownExpanded = remember {
         mutableStateOf(false)
     }
     val isSkillLevelsDropdownExpanded = remember {
         mutableStateOf(false)
     }
+    val isScenarioDropdownExpanded = remember {
+        mutableStateOf(false)
+    }
 
-    // INTERFACE
+    // UI
     Column (
         modifier = Modifier
             .fillMaxSize(),
@@ -113,6 +119,41 @@ fun SetupScreen(navController: NavController,
                 }
             }
         }
+        Text("Optionally choose a scenario to practice")
+        Box {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable {
+                    isScenarioDropdownExpanded.value = true
+                }) {
+                Text(
+                    text = scenario[scenarioItemPosition.intValue].short,
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .background(color= Color.LightGray)
+                        .padding(12.dp)
+                )
+            }
+            DropdownMenu(expanded = isScenarioDropdownExpanded.value, onDismissRequest = {isScenarioDropdownExpanded.value = false}) {
+                scenario.forEachIndexed { index, scenario ->
+                    DropdownMenuItem(
+                        text = {Text(text = scenario.short) },
+                        onClick = {
+                            isScenarioDropdownExpanded.value = false
+                            scenarioItemPosition.intValue = index
+                        })
+                }
+            }
+        }
+        Box {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = scenario[scenarioItemPosition.intValue].description)
+            }
+        }
 
         // BUTTON
         Button(
@@ -121,7 +162,8 @@ fun SetupScreen(navController: NavController,
                 setupViewModel.setSkillLevel(skillLevel[skillLevelsItemPosition.intValue])
                 chatViewModel.clearChatHistory()
                 mistakesViewModel.clearMistakes()
-                navController.navigate("ChatScreen")}) {
+                navController.navigate("ChatScreen")
+            }) {
             Text(
                 text="Let's go!")
         }
