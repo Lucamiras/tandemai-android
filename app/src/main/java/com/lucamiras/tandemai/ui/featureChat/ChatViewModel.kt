@@ -1,19 +1,14 @@
 package com.lucamiras.tandemai.ui.featureChat
 
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.lifecycle.MutableLiveData
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.ai.client.generativeai.type.Content
 import com.google.ai.client.generativeai.type.asTextOrNull
 import com.google.ai.client.generativeai.type.content
-import com.lucamiras.tandemai.data.model.Message
 import com.lucamiras.tandemai.data.model.Mistake
-import com.lucamiras.tandemai.data.repository.ChatSystemInstruction
 import com.lucamiras.tandemai.data.repository.LLMAPIClient
 import com.lucamiras.tandemai.data.repository.LLMImplementation
-import com.lucamiras.tandemai.data.repository.LLMRepository
 import com.lucamiras.tandemai.data.repository.MistakeSystemInstruction
 import com.lucamiras.tandemai.data.repository.SystemInstructions
 import com.lucamiras.tandemai.ui.featureMistakes.MistakesViewModel
@@ -22,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 class ChatViewModel : ViewModel() {
 
@@ -74,15 +70,20 @@ class ChatViewModel : ViewModel() {
                 systemInstructions=MistakeSystemInstruction,
                 chatHistory = chatHistory).collect { llmResponse ->
                     val mistakeId = mistakesViewModel.generateMistakeId()
-                    if (llmResponse.messageContent != "No mistakes\n") {
-                        mistakesViewModel.addMistakeToViewModel(
-                            Mistake(
-                                id = mistakeId,
-                                description = llmResponse.messageContent
-                            ))
-                    } else {
-                        return@collect
+                    val messageContent = llmResponse.messageContent
+                    val parsedJSON: Mistake = try {
+                        parseJsonFromString(messageContent)
+                    } catch (e: Exception) {
+                        Mistake(
+                            id=0,
+                            language="en-us",
+                            originalSentence = userMessage,
+                            errorType = "UNKNOWN",
+                            feedback = "NONE"
+                        )
                     }
+                    parsedJSON.id = mistakeId
+                    mistakesViewModel.addMistakeToViewModel(parsedJSON)
             }
         }
     }
@@ -91,6 +92,11 @@ class ChatViewModel : ViewModel() {
         val language = setupViewModel.selectedLanguage
         val skillLevel = setupViewModel.selectedSkillLevel
         return (LLMImplementation(LLMAPIClient(language, skillLevel)))
+    }
+
+    private fun parseJsonFromString(jsonString: String): Mistake {
+        val jsonOutput = Json.decodeFromString<Mistake>(jsonString)
+        return jsonOutput
     }
 
     fun clearChatHistory() {

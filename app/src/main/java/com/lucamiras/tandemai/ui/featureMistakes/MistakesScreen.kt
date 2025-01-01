@@ -92,7 +92,13 @@ fun MistakesBubble(mistake: Mistake) {
                     .wrapContentWidth()
             )
             Text (
-                text = mistake.description,
+                text = mistake.errorType,
+                modifier = Modifier
+                    .padding(12.dp)
+                    .wrapContentWidth()
+            )
+            Text (
+                text = mistake.feedback,
                 modifier = Modifier
                     .padding(12.dp)
                     .wrapContentWidth()

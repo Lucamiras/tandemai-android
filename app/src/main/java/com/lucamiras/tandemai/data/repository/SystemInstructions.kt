@@ -27,7 +27,7 @@ object ChatSystemInstruction : SystemInstructions{
             Correct response: "Hi, I am fine. How are you?"
             Incorrect response: "Sure, here is my response in English: Hi, I am fine. How are you?"
             
-        Regarding the skill level, {specificSkillLevelInstructions} 
+        Regarding the skill level, {specificSkillLevelInstructions}
     """
 
     override fun getSystemInstructions(language: StateFlow<Language>, skillLevel: StateFlow<SkillLevel>): Content {
@@ -51,17 +51,27 @@ object ChatSystemInstruction : SystemInstructions{
 }
 
 object MistakeSystemInstruction : SystemInstructions {
-    override val responseType = "text/plain"
+    override val responseType = "application/json"
     override val template = """
         You are a helpful language learning assistant.
         The user is chatting with another language learning assistant.
         The user is learning {language} and has a {skilllevel} skill level.
         Your task is to look at the response from the user and point out any mistakes.
         Ignore mistakes like a missing comma or an additional white space. Only point out clear errors in grammar or spelling.
+        
+        You must respond in valid JSON. Never add any additional information but the answer itself.
+        You must use the following JSON keys: id, language, originalSentence, errorType, feedback.
+        
         Example:
-            User: "I is very hungry."
-            Response: "You wrote 'I is very hungry'. The correct response would have been 'I AM very hungry'."
-        IF THE USER MADE NO MISTAKES, please return 'No mistakes'.
+            {
+                "id": 0,
+                "language":"en-us",
+                "originalSentence":"I are very hungry",
+                "errorType":"verb configuration",
+                "feedback":"Instead of 'I are very hungry', you should write 'I am very hungry'.
+            }
+            
+        IF THE USER MADE NO MISTAKES, please return an empty JSON object.
     """.trimIndent()
 
     override fun getSystemInstructions(language: StateFlow<Language>, skillLevel: StateFlow<SkillLevel>): Content {

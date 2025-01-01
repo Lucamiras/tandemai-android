@@ -4,6 +4,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Mistake(
-    val id: Int,
-    val description: String
+    var id: Int,
+    val language: String,
+    val originalSentence: String,
+    val errorType: String,
+    val feedback: String,
 )
