@@ -55,6 +55,7 @@ I love learning languages, and I do believe that a tandem partner is a great way
 
 ## Project Structure
 
+```
 com.lucamiras.tandemai
 ├── ui              // UI-related code (Composables and ViewModels)
 │   ├── featureSetup
@@ -80,3 +81,4 @@ com.lucamiras.tandemai
 ├── navigation     // Navigation graph (optional)
 │   └── AppNavigation.kt        // Composable for navigation
 └── MainActivity.kt  // Main activity
+```
