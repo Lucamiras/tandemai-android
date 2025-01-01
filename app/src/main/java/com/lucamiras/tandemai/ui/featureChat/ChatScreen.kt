@@ -1,5 +1,6 @@
 package com.lucamiras.tandemai.ui.featureChat
 
+import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -27,55 +28,51 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.ai.client.generativeai.type.Content
 import com.google.ai.client.generativeai.type.asTextOrNull
-import com.google.ai.client.generativeai.type.content
+import com.lucamiras.tandemai.data.model.Mistake
 import com.lucamiras.tandemai.data.repository.ChatSystemInstruction
-import com.lucamiras.tandemai.data.repository.LLMAPIClient
-import com.lucamiras.tandemai.data.repository.LLMImplementation
+import com.lucamiras.tandemai.data.repository.MistakeSystemInstruction
+import com.lucamiras.tandemai.ui.featureMistakes.MistakesViewModel
 import com.lucamiras.tandemai.ui.featureSetup.SetupViewModel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(navController: NavController,
                setupViewModel: SetupViewModel,
-               chatViewModel: ChatViewModel
+               chatViewModel: ChatViewModel,
+               mistakesViewModel: MistakesViewModel
 ) {
-    val userName: String = "user"
-    val assistantName: String = "model"
-    val appName: String = "Tandem AI"
-    val selectedLanguage = setupViewModel.selectedLanguage
-    val selectedSkillLevel = setupViewModel.selectedSkillLevel
+    val appName: String = "Tandem Partner"
     var message by remember { mutableStateOf("") }
-    val mistakesList = listOf("Mistake1", "Mistake2")
-    val mistakesNum = mistakesList.size
-    val chatHistory = chatViewModel.chatHistory
-    val coroutineScope = rememberCoroutineScope()
+    val chatHistory: List<Content> by chatViewModel.chatHistory.collectAsState()
+    val mistakesHistory: List<Mistake> by mistakesViewModel.mistakes.collectAsState()
+    val mistakesNum: Int = mistakesHistory.size
+    val mistakesButtonColor = if (mistakesNum == 0) { Color.LightGray } else { Color.Magenta }
 
-    Scaffold (
+    Scaffold(
         topBar = {
-            TopAppBar (
-                title  = { Text(appName) }
+            TopAppBar(
+                title = { Text(appName) }
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                containerColor = Color.LightGray,
+                containerColor = mistakesButtonColor,
                 onClick = {
-                    navController.navigate("MyMistakes")
+                    navController.navigate("MistakesScreen")
                 }
             ) {
                 Text(mistakesNum.toString())
@@ -101,8 +98,18 @@ fun ChatScreen(navController: NavController,
                 Button(
                     onClick = {
                         if (message.isNotBlank()) {
-                            chatViewModel.addNewConversation(message)
+                            chatViewModel.addNewConversation(
+                                message = message,
+                                systemInstructions = ChatSystemInstruction,
+                                setupViewModel = setupViewModel
+                            )
+                            chatViewModel.evaluateMistakes(
+                                systemInstructions = MistakeSystemInstruction,
+                                setupViewModel = setupViewModel,
+                                mistakesViewModel = mistakesViewModel
+                            )
                         }
+                        message = ""
                     }
                 ) {
                     Text("Send")
@@ -120,7 +127,7 @@ fun ChatScreen(navController: NavController,
                 contentPadding = PaddingValues(16.dp),
                 reverseLayout = true
             ) {
-                items(chatHistory.value!!.asReversed()) { msg ->
+                items(chatHistory.asReversed()) { msg ->
                     ChatBubble(msg)
                 }
             }

@@ -10,16 +10,19 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import com.lucamiras.tandemai.data.model.Mistake
 
@@ -28,21 +31,26 @@ import com.lucamiras.tandemai.data.model.Mistake
 @Composable
 fun MistakesScreen(navController: NavController, mistakesViewModel: MistakesViewModel) {
 
-    val mistakesListTest = listOf(
-        Mistake(id=0, description = "Hello"),
-        Mistake(id=1, description = "My name is"),
-        Mistake(id=2, description = "Doge"),
-        Mistake(id=3, description = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.")
-    )
-    val mistakesList = mistakesViewModel.mistakes
-    val mistakesNum = mistakesList.value!!.size
-    val topAppBarTitle = "Mistakes"
+    val mistakesList = mistakesViewModel.mistakes.collectAsState()
+    val mistakesNum = mistakesList.value.size
+    val topAppBarTitle = "Mistakes ($mistakesNum)"
 
     Scaffold (
         topBar = {
             TopAppBar (
                 title = { Text(topAppBarTitle) }
             )
+        },
+        bottomBar = {
+            BottomAppBar {
+                Button (
+                    onClick = { mistakesViewModel.clearMistakes() },
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                ) {
+                    Text("Clear mistakes")
+                }
+            }
         }
     ) { innerPadding ->
         Box (
@@ -56,9 +64,9 @@ fun MistakesScreen(navController: NavController, mistakesViewModel: MistakesView
 }
 
 @Composable
-fun MistakesContent(mistakesList: MutableLiveData<List<Mistake>>) {
+fun MistakesContent(mistakesList: State<List<Mistake>>) {
     LazyColumn {
-        items(mistakesList.value!!.toList()) { mistake ->
+        items(mistakesList.value.toList()) { mistake ->
             MistakesBubble(mistake = mistake)
         }
     }

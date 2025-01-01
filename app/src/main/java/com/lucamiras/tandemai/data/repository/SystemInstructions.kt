@@ -4,17 +4,18 @@ import com.google.ai.client.generativeai.type.Content
 import com.google.ai.client.generativeai.type.content
 import com.lucamiras.tandemai.data.model.Language
 import com.lucamiras.tandemai.data.model.SkillLevel
+import kotlinx.coroutines.flow.StateFlow
 
 
 interface SystemInstructions {
-    val TEMPLATE: String
+    val template: String
     val responseType: String
-    fun getSystemInstructions(language: Language, skillLevel: SkillLevel) : Content
+    fun getSystemInstructions(language: StateFlow<Language>, skillLevel: StateFlow<SkillLevel>) : Content
 }
 
 object ChatSystemInstruction : SystemInstructions{
-    override val responseType = "plain/text"
-    override val TEMPLATE = """
+    override val responseType = "text/plain"
+    override val template = """
         You are a helpful language learning assistant, or Tandem Partner.
         The user you are talking to is learning {language} and has a {skilllevel} skill level.
         Please have a natural conversation with the user in {language}. 
@@ -29,10 +30,10 @@ object ChatSystemInstruction : SystemInstructions{
         Regarding the skill level, {specificSkillLevelInstructions} 
     """
 
-    override fun getSystemInstructions(language: Language, skillLevel: SkillLevel): Content {
-        val languageName = language.name
-        val skillLevelName = skillLevel.name
-        val specificSkillLevelInstructions = when (skillLevel) {
+    override fun getSystemInstructions(language: StateFlow<Language>, skillLevel: StateFlow<SkillLevel>): Content {
+        val languageName = language.value.name
+        val skillLevelName = skillLevel.value.name
+        val specificSkillLevelInstructions = when (skillLevel.value) {
             SkillLevel.Beginner -> "focus on basic grammar and vocabulary."
             SkillLevel.Intermediate -> "introduce more complex sentences, common expressions and different tenses."
             SkillLevel.Advanced -> "engage in nuanced discussions with complex sentence structures."
@@ -41,7 +42,7 @@ object ChatSystemInstruction : SystemInstructions{
 
         return (
                 content(role="model") {
-                    text(TEMPLATE
+                    text(template
                         .replace("{language}", languageName)
                         .replace("{skillLevel}", skillLevelName)
                         .replace("{specificSkillLevelInstructions}", specificSkillLevelInstructions))
@@ -50,24 +51,25 @@ object ChatSystemInstruction : SystemInstructions{
 }
 
 object MistakeSystemInstruction : SystemInstructions {
-    override val responseType = "plain/text"
-    override val TEMPLATE = """
+    override val responseType = "text/plain"
+    override val template = """
         You are a helpful language learning assistant.
         The user is chatting with another language learning assistant.
         The user is learning {language} and has a {skilllevel} skill level.
         Your task is to look at the response from the user and point out any mistakes.
+        Ignore mistakes like a missing comma or an additional white space. Only point out clear errors in grammar or spelling.
         Example:
             User: "I is very hungry."
             Response: "You wrote 'I is very hungry'. The correct response would have been 'I AM very hungry'."
         IF THE USER MADE NO MISTAKES, please return 'No mistakes'.
     """.trimIndent()
 
-    override fun getSystemInstructions(language: Language, skillLevel: SkillLevel): Content {
-        val languageName = language.name
-        val skillLevelName = skillLevel.name
+    override fun getSystemInstructions(language: StateFlow<Language>, skillLevel: StateFlow<SkillLevel>): Content {
+        val languageName = language.value.name
+        val skillLevelName = skillLevel.value.name
         return (
                 content(role="model") {
-                    text(TEMPLATE
+                    text(template
                         .replace("{language}", languageName)
                         .replace("{skillLevel}", skillLevelName)
                     )

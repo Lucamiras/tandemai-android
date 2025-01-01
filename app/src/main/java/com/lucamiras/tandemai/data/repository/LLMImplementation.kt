@@ -8,12 +8,14 @@ import com.lucamiras.tandemai.BuildConfig
 import com.lucamiras.tandemai.data.model.Language
 import com.lucamiras.tandemai.data.model.Message
 import com.lucamiras.tandemai.data.model.SkillLevel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 
 
-class LLMAPIClient (language: Language,
-                    skillLevel: SkillLevel,
+class LLMAPIClient (language: StateFlow<Language>,
+                    skillLevel: StateFlow<SkillLevel>,
                     modelName: String = "gemini-1.5-flash"){
 
     private val _language = language
@@ -22,13 +24,12 @@ class LLMAPIClient (language: Language,
 
     suspend fun callLLMEndpoint(message: String,
                                 systemInstruction: SystemInstructions,
-                                chatHistory: MutableList<Content>) : String {
+                                chatHistory: StateFlow<List<Content>>) : String {
 
         val systemInstructionContent = systemInstruction.getSystemInstructions(_language, _skillLevel)
         val responseFormat = systemInstruction.responseType
 
-        val model by lazy {
-            GenerativeModel(
+        val model = GenerativeModel(
                 modelName = _modelName,
                 apiKey = BuildConfig.GEMINI_API_KEY,
                 systemInstruction = systemInstructionContent,
@@ -40,8 +41,7 @@ class LLMAPIClient (language: Language,
                     responseMimeType = responseFormat
                 }
             )
-        }
-        val chat = model.startChat(history = chatHistory)
+        val chat = model.startChat(history = chatHistory.value)
         val response = chat.sendMessage(message)
         val responseString = response.candidates[0].content.parts[0].asTextOrNull().toString()
         return responseString
@@ -49,17 +49,23 @@ class LLMAPIClient (language: Language,
 }
 
 class LLMImplementation(private val apiClient: LLMAPIClient) : LLMRepository{
-    override fun sendMessageToLLM(message: String, systemInstructions: SystemInstructions, chatHistory: MutableList<Content>): Flow<Message> = flow {
-        val response = apiClient.callLLMEndpoint(
-            message = message,
-            systemInstruction = systemInstructions,
-            chatHistory = chatHistory
-        )
-        val llmMessage = Message(
-            messageId = 0,
-            senderRole = "model",
-            messageContent = response
-        )
-        emit(llmMessage)
+    override fun sendMessageToLLM(
+        message: String,
+        systemInstructions: SystemInstructions,
+        chatHistory: StateFlow<List<Content>>
+    ): Flow<Message> = flow {
+        coroutineScope {
+            val response = apiClient.callLLMEndpoint(
+                message = message,
+                systemInstruction = systemInstructions,
+                chatHistory = chatHistory
+            )
+            val llmMessage = Message(
+                messageId = 0,
+                senderRole = "model",
+                messageContent = response
+            )
+            emit(llmMessage)
+        }
     }
 }

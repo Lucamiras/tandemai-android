@@ -114,7 +114,7 @@ fun SetupScreen(navController: NavController, setupViewModel: SetupViewModel) {
             onClick={
                 setupViewModel.setLanguage(languages[languagesItemPosition.intValue])
                 setupViewModel.setSkillLevel(skillLevel[skillLevelsItemPosition.intValue])
-                navController.navigate("MyApp")}) {
+                navController.navigate("ChatScreen")}) {
             Text(
                 text="Let's go!")
         }
