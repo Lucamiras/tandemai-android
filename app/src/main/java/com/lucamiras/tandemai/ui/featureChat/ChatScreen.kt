@@ -45,6 +45,7 @@ import com.google.ai.client.generativeai.type.asTextOrNull
 import com.lucamiras.tandemai.data.model.Mistake
 import com.lucamiras.tandemai.data.repository.ChatSystemInstruction
 import com.lucamiras.tandemai.data.repository.MistakeSystemInstruction
+import com.lucamiras.tandemai.data.repository.OpeningSystemInstruction
 import com.lucamiras.tandemai.ui.featureMistakes.MistakesViewModel
 import com.lucamiras.tandemai.ui.featureSetup.SetupViewModel
 
@@ -55,7 +56,7 @@ fun ChatScreen(navController: NavController,
                chatViewModel: ChatViewModel,
                mistakesViewModel: MistakesViewModel
 ) {
-    val appName: String = "Tandem Partner"
+    val appName = "Tandem Partner"
     var message by remember { mutableStateOf("") }
     val chatHistory: List<Content> by chatViewModel.chatHistory.collectAsState()
     val mistakesHistory: List<Mistake> by mistakesViewModel.mistakes.collectAsState()

@@ -10,6 +10,7 @@ import com.lucamiras.tandemai.data.model.Mistake
 import com.lucamiras.tandemai.data.repository.LLMAPIClient
 import com.lucamiras.tandemai.data.repository.LLMImplementation
 import com.lucamiras.tandemai.data.repository.MistakeSystemInstruction
+import com.lucamiras.tandemai.data.repository.OpeningSystemInstruction
 import com.lucamiras.tandemai.data.repository.SystemInstructions
 import com.lucamiras.tandemai.ui.featureMistakes.MistakesViewModel
 import com.lucamiras.tandemai.ui.featureSetup.SetupViewModel
@@ -40,6 +41,24 @@ class ChatViewModel : ViewModel() {
            llm.sendMessageToLLM(
                 message=message,
                 systemInstructions = systemInstructions,
+                chatHistory = chatHistory).collect { llmResponse ->
+                _chatHistory.value += content("model") { text(llmResponse.messageContent) }
+            }
+        }
+    }
+
+    fun startConversation(setupViewModel: SetupViewModel) {
+
+        val openingPrompt = "Please start the conversation as instructed."
+
+        // Initialize LLM with current setup
+        val llm = initializeLLMClient(setupViewModel)
+
+        // Launch coroutine to handle LLM call
+        viewModelScope.launch {
+            llm.sendMessageToLLM(
+                message=openingPrompt,
+                systemInstructions = OpeningSystemInstruction,
                 chatHistory = chatHistory).collect { llmResponse ->
                 _chatHistory.value += content("model") { text(llmResponse.messageContent) }
             }

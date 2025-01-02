@@ -26,7 +26,7 @@ class LLMAPIClient (language: StateFlow<Language>,
                                 systemInstruction: SystemInstructions,
                                 chatHistory: StateFlow<List<Content>>) : String {
 
-        val systemInstructionContent = systemInstruction.getSystemInstructions(_language, _skillLevel)
+        val systemInstructionContent = systemInstruction.composeSystemInstruction(_language, _skillLevel)
         val responseFormat = systemInstruction.responseType
 
         val model = GenerativeModel(

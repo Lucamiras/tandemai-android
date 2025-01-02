@@ -162,6 +162,7 @@ fun SetupScreen(navController: NavController,
                 setupViewModel.setSkillLevel(skillLevel[skillLevelsItemPosition.intValue])
                 chatViewModel.clearChatHistory()
                 mistakesViewModel.clearMistakes()
+                chatViewModel.startConversation(setupViewModel)
                 navController.navigate("ChatScreen")
             }) {
             Text(

@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 interface SystemInstructions {
     val template: String
     val responseType: String
-    fun getSystemInstructions(language: StateFlow<Language>, skillLevel: StateFlow<SkillLevel>) : Content
+    fun composeSystemInstruction(language: StateFlow<Language>, skillLevel: StateFlow<SkillLevel>) : Content
 }
 
 object ChatSystemInstruction : SystemInstructions{
@@ -30,7 +30,7 @@ object ChatSystemInstruction : SystemInstructions{
         Regarding the skill level, {specificSkillLevelInstructions}
     """
 
-    override fun getSystemInstructions(language: StateFlow<Language>, skillLevel: StateFlow<SkillLevel>): Content {
+    override fun composeSystemInstruction(language: StateFlow<Language>, skillLevel: StateFlow<SkillLevel>): Content {
         val languageName = language.value.name
         val skillLevelName = skillLevel.value.name
         val specificSkillLevelInstructions = when (skillLevel.value) {
@@ -74,7 +74,7 @@ object MistakeSystemInstruction : SystemInstructions {
         IF THE USER MADE NO MISTAKES, please return an empty JSON object.
     """.trimIndent()
 
-    override fun getSystemInstructions(language: StateFlow<Language>, skillLevel: StateFlow<SkillLevel>): Content {
+    override fun composeSystemInstruction(language: StateFlow<Language>, skillLevel: StateFlow<SkillLevel>): Content {
         val languageName = language.value.name
         val skillLevelName = skillLevel.value.name
         return (
@@ -82,6 +82,37 @@ object MistakeSystemInstruction : SystemInstructions {
                     text(template
                         .replace("{language}", languageName)
                         .replace("{skillLevel}", skillLevelName)
+                    )
+                })
+    }
+}
+
+object OpeningSystemInstruction : SystemInstructions {
+    override val responseType = "text/plain"
+    override val template = """
+        You are a helpful language learning assistant, or Tandem Partner.
+        The user you are talking to is learning {language} and has a {skilllevel} skill level.
+        Please write the opening greeting. You can choose to write it, but it MUST always be in {language}. 
+        No other language is acceptable.
+        Respond in plain text. Never add any additional information but the answer itself.
+        
+        Good examples:
+            "Hi, how are you doing?"
+            "Good day!"
+            "What's up?"
+        
+        Bad example:
+            "Sure, here is my opening response: Hi, what's up?"
+    """.trimIndent()
+
+    override fun composeSystemInstruction(language: StateFlow<Language>, skillLevel: StateFlow<SkillLevel>): Content {
+        val languageName = language.value.name
+
+        return (
+                content(role="model") {
+                    text(
+                        ChatSystemInstruction.template
+                        .replace("{language}", languageName)
                     )
                 })
     }
