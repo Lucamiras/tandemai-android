@@ -56,7 +56,6 @@ fun ChatScreen(navController: NavController,
                chatViewModel: ChatViewModel,
                mistakesViewModel: MistakesViewModel
 ) {
-    val appName = "Tandem Partner"
     var message by remember { mutableStateOf("") }
     val chatHistory: List<Content> by chatViewModel.chatHistory.collectAsState()
     val mistakesHistory: List<Mistake> by mistakesViewModel.mistakes.collectAsState()
@@ -66,7 +65,7 @@ fun ChatScreen(navController: NavController,
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(appName) }
+                title = { Text(setupViewModel.appName) }
             )
         },
         floatingActionButton = {
@@ -105,7 +104,6 @@ fun ChatScreen(navController: NavController,
                                 setupViewModel = setupViewModel
                             )
                             chatViewModel.evaluateMistakes(
-                                systemInstructions = MistakeSystemInstruction,
                                 setupViewModel = setupViewModel,
                                 mistakesViewModel = mistakesViewModel
                             )

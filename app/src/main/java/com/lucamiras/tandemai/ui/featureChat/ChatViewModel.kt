@@ -25,6 +25,24 @@ class ChatViewModel : ViewModel() {
     private val _chatHistory = MutableStateFlow<List<Content>>(emptyList())
     val chatHistory: StateFlow<List<Content>> = _chatHistory.asStateFlow()
 
+    fun startConversation(setupViewModel: SetupViewModel) {
+
+        val openingPrompt = "Please start the conversation as instructed."
+
+        // Initialize LLM with current setup
+        val llm = initializeLLMClient(setupViewModel)
+
+        // Launch coroutine to handle LLM call
+        viewModelScope.launch {
+            llm.sendMessageToLLM(
+                message=openingPrompt,
+                systemInstructions = OpeningSystemInstruction,
+                chatHistory = chatHistory).collect { llmResponse ->
+                _chatHistory.value += content("model") { text(llmResponse.messageContent) }
+            }
+        }
+    }
+
     fun addNewConversation(message: String,
                            systemInstructions: SystemInstructions,
                            setupViewModel: SetupViewModel) {
@@ -47,25 +65,7 @@ class ChatViewModel : ViewModel() {
         }
     }
 
-    fun startConversation(setupViewModel: SetupViewModel) {
-
-        val openingPrompt = "Please start the conversation as instructed."
-
-        // Initialize LLM with current setup
-        val llm = initializeLLMClient(setupViewModel)
-
-        // Launch coroutine to handle LLM call
-        viewModelScope.launch {
-            llm.sendMessageToLLM(
-                message=openingPrompt,
-                systemInstructions = OpeningSystemInstruction,
-                chatHistory = chatHistory).collect { llmResponse ->
-                _chatHistory.value += content("model") { text(llmResponse.messageContent) }
-            }
-        }
-    }
-
-    fun evaluateMistakes(systemInstructions: SystemInstructions, setupViewModel: SetupViewModel, mistakesViewModel: MistakesViewModel) {
+    fun evaluateMistakes(setupViewModel: SetupViewModel, mistakesViewModel: MistakesViewModel) {
 
         // Get last two messages ( one from model, one from user )
         val latestMessages = _chatHistory.value.takeLast(2)
@@ -95,14 +95,16 @@ class ChatViewModel : ViewModel() {
                     } catch (e: Exception) {
                         Mistake(
                             id=0,
-                            language="en-us",
-                            originalSentence = userMessage,
-                            errorType = "UNKNOWN",
-                            feedback = "NONE"
+                            language="n/a",
+                            originalSentence = "n/a",
+                            errorType = "none",
+                            feedback = "none"
                         )
                     }
-                    parsedJSON.id = mistakeId
-                    mistakesViewModel.addMistakeToViewModel(parsedJSON)
+                    if (parsedJSON.feedback != "none") {
+                        parsedJSON.id = mistakeId
+                        mistakesViewModel.addMistakeToViewModel(parsedJSON)
+                    }
             }
         }
     }
@@ -110,7 +112,8 @@ class ChatViewModel : ViewModel() {
     private fun initializeLLMClient(setupViewModel: SetupViewModel) : LLMImplementation {
         val language = setupViewModel.selectedLanguage
         val skillLevel = setupViewModel.selectedSkillLevel
-        return (LLMImplementation(LLMAPIClient(language, skillLevel)))
+        val scenario = setupViewModel.selectedScenario
+        return (LLMImplementation(LLMAPIClient(language, skillLevel, scenario)))
     }
 
     private fun parseJsonFromString(jsonString: String): Mistake {

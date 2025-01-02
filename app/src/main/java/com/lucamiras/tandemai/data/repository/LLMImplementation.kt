@@ -7,6 +7,7 @@ import com.google.ai.client.generativeai.type.generationConfig
 import com.lucamiras.tandemai.BuildConfig
 import com.lucamiras.tandemai.data.model.Language
 import com.lucamiras.tandemai.data.model.Message
+import com.lucamiras.tandemai.data.model.Scenario
 import com.lucamiras.tandemai.data.model.SkillLevel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -16,17 +17,19 @@ import kotlinx.coroutines.flow.flow
 
 class LLMAPIClient (language: StateFlow<Language>,
                     skillLevel: StateFlow<SkillLevel>,
+                    scenario: StateFlow<Scenario>,
                     modelName: String = "gemini-1.5-flash"){
 
     private val _language = language
     private val _skillLevel = skillLevel
+    private val _scenario = scenario
     private val _modelName = modelName
 
     suspend fun callLLMEndpoint(message: String,
                                 systemInstruction: SystemInstructions,
                                 chatHistory: StateFlow<List<Content>>) : String {
 
-        val systemInstructionContent = systemInstruction.composeSystemInstruction(_language, _skillLevel)
+        val systemInstructionContent = systemInstruction.composeSystemInstruction(_language, _skillLevel, _scenario)
         val responseFormat = systemInstruction.responseType
 
         val model = GenerativeModel(
