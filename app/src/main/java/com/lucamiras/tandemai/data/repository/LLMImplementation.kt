@@ -25,9 +25,9 @@ class LLMAPIClient (language: StateFlow<Language>,
     private val _scenario = scenario
     private val _modelName = modelName
 
-    suspend fun callLLMEndpoint(message: String,
-                                systemInstruction: SystemInstructions,
-                                chatHistory: StateFlow<List<Content>>) : String {
+    suspend fun callLLMAPIEndpoint(message: String,
+                                   systemInstruction: SystemInstructions,
+                                   chatHistory: StateFlow<List<Content>>) : String {
 
         val systemInstructionContent = systemInstruction.composeSystemInstruction(_language, _skillLevel, _scenario)
         val responseFormat = systemInstruction.responseType
@@ -58,7 +58,7 @@ class LLMImplementation(private val apiClient: LLMAPIClient) : LLMRepository{
         chatHistory: StateFlow<List<Content>>
     ): Flow<Message> = flow {
         coroutineScope {
-            val response = apiClient.callLLMEndpoint(
+            val response = apiClient.callLLMAPIEndpoint(
                 message = message,
                 systemInstruction = systemInstructions,
                 chatHistory = chatHistory

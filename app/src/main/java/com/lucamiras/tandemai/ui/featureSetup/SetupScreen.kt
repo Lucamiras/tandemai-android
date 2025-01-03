@@ -7,19 +7,23 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,12 +51,13 @@ fun SetupScreen(navController: NavController,
 
     // Setup necessary variables for dropdowns and dropdown selection
     val languagesItemPosition = remember { mutableIntStateOf(0) }
-    val skillLevelsItemPosition = remember { mutableIntStateOf(0) }
+    var skillLevelSliderPosition by remember { mutableFloatStateOf(0f) }
     val scenarioItemPosition = remember { mutableIntStateOf(0) }
 
     val isLanguagesDropdownExpanded = remember { mutableStateOf(false) }
-    val isSkillLevelsDropdownExpanded = remember { mutableStateOf(false) }
     val isScenarioDropdownExpanded = remember { mutableStateOf(false) }
+
+
 
     // UI
     Scaffold(
@@ -96,30 +101,22 @@ fun SetupScreen(navController: NavController,
                     }
                 }
             }
-            Box {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable {
-                        isSkillLevelsDropdownExpanded.value = true
-                    }) {
-                    Text(
-                        text = skillLevel[skillLevelsItemPosition.intValue].name,
-                        modifier = Modifier
-                            .padding(12.dp)
-                            .background(color = Color.LightGray)
-                            .padding(12.dp)
+            Box (
+                modifier = Modifier
+                    .height(100.dp)
+                    .padding(start = 50.dp, end = 50.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column {
+                    Slider (
+                        value = skillLevelSliderPosition,
+                        onValueChange = { skillLevelSliderPosition = it },
+                        steps = 2,
+                        valueRange = 0f..3f
                     )
-                }
-                DropdownMenu(expanded = isSkillLevelsDropdownExpanded.value, onDismissRequest = {isSkillLevelsDropdownExpanded.value = false}) {
-                    skillLevel.forEachIndexed { index, level ->
-                        DropdownMenuItem(
-                            text = {Text(text = level.name)},
-                            onClick = {
-                                isSkillLevelsDropdownExpanded.value = false
-                                skillLevelsItemPosition.intValue = index
-                            })
-                    }
+                    Text(
+                        text = skillLevel[skillLevelSliderPosition.toInt()].toString(),
+                        textAlign = TextAlign.Center)
                 }
             }
             Text("Optionally choose a scenario to practice")
@@ -170,7 +167,7 @@ fun SetupScreen(navController: NavController,
                     // Save user selection to setupViewModel
                     setupViewModel.saveUserSelection(
                         language = languages[languagesItemPosition.intValue],
-                        skillLevel = skillLevel[skillLevelsItemPosition.intValue],
+                        skillLevel = skillLevel[skillLevelSliderPosition.toInt()],
                         scenario = scenario[scenarioItemPosition.intValue]
                     )
                     // Clear any previous chat history and mistakes
