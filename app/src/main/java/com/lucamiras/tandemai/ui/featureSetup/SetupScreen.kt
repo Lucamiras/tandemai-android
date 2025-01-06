@@ -57,8 +57,6 @@ fun SetupScreen(navController: NavController,
     val isLanguagesDropdownExpanded = remember { mutableStateOf(false) }
     val isScenarioDropdownExpanded = remember { mutableStateOf(false) }
 
-
-
     // UI
     Scaffold(
         topBar = {

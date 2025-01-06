@@ -1,5 +1,6 @@
 package com.lucamiras.tandemai.ui.featureChat
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -24,6 +25,7 @@ class ChatViewModel : ViewModel() {
 
     private val _chatHistory = MutableStateFlow<List<Content>>(emptyList())
     val chatHistory: StateFlow<List<Content>> = _chatHistory.asStateFlow()
+    lateinit var appContext: Context
 
     fun startConversation(setupViewModel: SetupViewModel) {
 
@@ -113,7 +115,7 @@ class ChatViewModel : ViewModel() {
         val language = setupViewModel.selectedLanguage
         val skillLevel = setupViewModel.selectedSkillLevel
         val scenario = setupViewModel.selectedScenario
-        return (LLMImplementation(LLMAPIClient(language, skillLevel, scenario)))
+        return (LLMImplementation(LLMAPIClient(language, skillLevel, scenario, appContext)))
     }
 
     private fun parseJsonFromString(jsonString: String): Mistake {

@@ -85,6 +85,7 @@ dependencies {
     implementation(libs.androidx.activity.compose.v182)
     implementation(libs.ui)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.tasks.genai)
 }
 repositories {
     google()

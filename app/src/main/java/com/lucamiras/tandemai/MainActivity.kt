@@ -22,6 +22,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        chatViewModel.appContext = this.applicationContext
         enableEdgeToEdge()
         setContent {
             AppNavigation(

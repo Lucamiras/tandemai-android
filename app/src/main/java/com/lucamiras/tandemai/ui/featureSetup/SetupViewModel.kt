@@ -1,5 +1,7 @@
 package com.lucamiras.tandemai.ui.featureSetup
 
+import android.annotation.SuppressLint
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.lucamiras.tandemai.data.model.SkillLevel
 import com.lucamiras.tandemai.data.model.Language
@@ -7,7 +9,8 @@ import com.lucamiras.tandemai.data.model.Scenario
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class SetupViewModel : ViewModel() {
+@SuppressLint("StaticFieldLeak")
+class SetupViewModel: ViewModel() {
 
     private val _selectedLanguage = MutableStateFlow<Language>(Language.English)
     val selectedLanguage = _selectedLanguage.asStateFlow()

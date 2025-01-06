@@ -17,6 +17,7 @@ material3 = "1.3.1"
 navigationCompose = "2.8.5"
 material3Android = "1.3.1"
 material3Desktop = "1.3.1"
+tasksGenai = "0.10.14"
 ui = "1.7.6"
 activityKtx = "1.9.3"
 
@@ -47,6 +48,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 #noinspection SimilarGradleDependency
 kotlinx-serialization-json-v173 = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJsonVersion" }
 
+tasks-genai = { module = "com.google.mediapipe:tasks-genai", version.ref = "tasksGenai" }
 ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 #noinspection SimilarGradleDependency
 androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }

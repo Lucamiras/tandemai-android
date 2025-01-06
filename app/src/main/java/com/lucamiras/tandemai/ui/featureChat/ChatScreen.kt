@@ -1,5 +1,6 @@
 package com.lucamiras.tandemai.ui.featureChat
 
+import android.content.Context
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
