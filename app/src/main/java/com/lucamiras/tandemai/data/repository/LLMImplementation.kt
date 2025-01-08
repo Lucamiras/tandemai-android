@@ -96,7 +96,7 @@ class LLMImplementation(private val apiClient: LLMAPIClient) : LLMRepository{
         chatHistory: StateFlow<List<Content>>
     ): Flow<Message> = flow {
         coroutineScope {
-            val response = apiClient.callLocalLLMEndpoint(
+            val response = apiClient.callLLMAPIEndpoint(
                 message = message,
                 systemInstruction = systemInstructions,
                 chatHistory = chatHistory
