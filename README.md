@@ -9,9 +9,7 @@
 Tandem AI is an Android implementation of a Streamlit app I built in 2024. It is designed to help language learners practice conversational language where simple vocabulary and grammar apps are not enough.
 I love learning languages, and I do believe that a tandem partner is a great way to practice the language properly. However, it tends to be difficult to find a person in your time zone that matches with you and your language needs, especially for lesser known, smaller languages.
 
-| SetupScreen | ChatScreen | MistakesScreen |
-:---:|:---:|:---:|:---:|
-|![ALT](Images/setupScreen.png) | ![ALT](Images/chatScreen.png) | ![ALT](Images/mistakesScreen.png) |
+|![ALT](Images/tandem3.jpg)
 
 ## Features
 
